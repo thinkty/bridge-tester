@@ -3,8 +3,8 @@
 
 CC=gcc
 CFLAGS=-g -Wall -I$(IDIR)
-LDLIBS=-lcurses
-OUTPUT=server
+LDLIBS=
+OUTPUT=tester
 ROOTDIR=.
 IDIR=$(ROOTDIR)/include
 SDIR=$(ROOTDIR)/src
@@ -13,7 +13,7 @@ ODIR=$(ROOTDIR)/obj
 _DEPS=tcp.h
 DEPS=$(addprefix $(IDIR)/,$(_DEPS))
 
-_OBJS=tcp.o server.o
+_OBJS=tcp.o main.o
 OBJS=$(addprefix $(ODIR)/,$(_OBJS))
 
 $(OUTPUT): $(OBJS)

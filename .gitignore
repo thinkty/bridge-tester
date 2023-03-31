@@ -29,7 +29,7 @@
 *.dylib
 
 # Target
-server
+tester
 
 # Executables
 *.exe
