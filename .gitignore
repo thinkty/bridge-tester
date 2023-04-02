@@ -30,6 +30,8 @@
 
 # Target
 tester
+publisher
+subscriber
 
 # Executables
 *.exe
