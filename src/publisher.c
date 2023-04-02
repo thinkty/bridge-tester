@@ -56,13 +56,16 @@ int main(int argc, char *argv[])
         /* Read from given file */
         size_t size = fread(buffer, 1, SERVER_PF_DATA, fp);
         printf("[%ld]\n", size);
-        size_t sent = 0;
+		if (size == 0 && feof(fp)) {
+			break;
+		}
 
         /* Send to the server */
+        size_t sent = 0;
         while (sent < size) {
             size_t ret_send = send(sock, &buffer[sent], size-sent, 0);
             if (ret_send < 0) {
-                printf("Failed to send file\n");
+                fprintf(stderr, "Failed to send file\n");
                 fclose(fp);
                 close(sock);
                 return 0;
@@ -71,6 +74,15 @@ int main(int argc, char *argv[])
             sent += ret_send;
             total_sent += ret_send;
         }
+
+		/* Receive response from the server */
+		char resp;
+		if (recv(sock, &resp, sizeof(resp) , 0) <= 0 || resp != 'O') {
+			fprintf(stderr, "Error while receiving response for publish block\n");
+			fclose(fp);
+			close(sock);
+			return 0;
+		}
     }
 
     printf("Successfully sent %ld bytes...\n", total_sent);

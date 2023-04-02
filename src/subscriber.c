@@ -13,13 +13,25 @@ int handle_publish_message(int sock);
 
 char topic[TOPIC_LEN+1];
 char buffer[SERVER_PF_SIZE+SERVER_PF_DATA+1];
+FILE * fp;
 
 int main(int argc, char *argv[])
 {
 	/* Check arguments */
-	if (argc != 4) {
-		printf("Usage: %s <ip> <port> <topic>\n", argv[0]);
+	if (argc != 4 && argc != 5) {
+		printf("Usage: %s <ip> <port> <topic> [<file>]\n", argv[0]);
 		return ERR;
+	}
+
+	/* Open the file to write output if given */
+	if (argc == 5) {
+		fp = fopen(argv[4], "wb");
+		if (fp == NULL) {
+			return ERR;
+		}
+		printf("Saving received messages to %s\n...", argv[4]);
+	} else {
+		fp = stdout;
 	}
 
 	/* Connect to bridge server */
@@ -52,7 +64,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	buffer[ret] = '\0';
-	printf("Recieved response : %s\n", buffer);
+	printf("Received response : %s\n", buffer);
 
 	/* Server internal error */
 	if (buffer[0] == 'F') {
@@ -99,20 +111,18 @@ int handle_publish(int sock)
 		perror("send(heartbeat)");
 		return ERR;
 	}
-	printf("Heartbeat handled...\n");
 
 	/* Handle publish messages until \r\n\r\n message is received or error */
 	if (handle_publish_message(sock) != OK) {
 		return ERR;
 	}
 
-	printf("End of stream...\n");
-	fflush(stdout);
 	return OK;
 }
 
 int handle_publish_message(int sock)
 {
+	size_t total = 0;
 	ssize_t ret;
 
 	for (;;) {
@@ -124,22 +134,16 @@ int handle_publish_message(int sock)
 		}
 
 		uint16_t size = ntohs(buffer[0] << 8 | buffer[1]);
-		printf("\n[%u]\n", size);
 		uint16_t received = 0;
 
 		/* Make sure to read until the specified size */
 		while (received < size) {
 			if ((ret = recv(sock, &buffer[received], size-received, 0)) <= 0) {
-				fprintf(stderr, "Error while receiving size of publish message\n");
+				fprintf(stderr, "Error while receiving publish message\n");
 				return ERR;
 			}
 
-			for (int i = 0; i < ret; i++) {
-				printf("%c", buffer[i+received]);
-			}
-
 			received += ret;
-			fflush(stdout);
 		}
 		if (received != size) {
 			printf("(%u != %u) ", received, size);
@@ -150,11 +154,22 @@ int handle_publish_message(int sock)
 		if (strcmp(buffer, SERVER_PF_END) == 0) {
 			break;
 		}
+
+		printf("\n[%u]\n", size);
+		total += received;
+		if (fwrite(buffer, 1, size, fp) != received) {
+			fprintf(stderr, "Error different size of write and received\n");
+			fclose(fp);
+			return ERR;
+		}
+		fflush(fp);
 		fflush(stdout);
 	}
 
 	if (ret < 0) {
 		return ERR;
 	}
+
+	printf("Received %lu bytes in total...\n", total);
 	return OK;
 }
