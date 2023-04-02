@@ -3,8 +3,6 @@
 
 CC=gcc
 CFLAGS=-g -Wall -I$(IDIR)
-LDLIBS=
-OUTPUT=tester
 ROOTDIR=.
 IDIR=$(ROOTDIR)/include
 SDIR=$(ROOTDIR)/src
@@ -13,13 +11,23 @@ ODIR=$(ROOTDIR)/obj
 _DEPS=tcp.h
 DEPS=$(addprefix $(IDIR)/,$(_DEPS))
 
-_OBJS=tcp.o main.o
-OBJS=$(addprefix $(ODIR)/,$(_OBJS))
+_OBJS_P=tcp.o publisher.o
+OBJS_P=$(addprefix $(ODIR)/,$(_OBJS_P))
 
-$(OUTPUT): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o $@ $^
+_OBJS_S=tcp.o subscriber.o
+OBJS_S=$(addprefix $(ODIR)/,$(_OBJS_S))
 
-$(OBJS): | $(ODIR)
+all: publisher subscriber
+
+publisher: $(OBJS_P)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(OBJS_P): | $(ODIR)
+
+subscriber: $(OBJS_S)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(OBJS_S): | $(ODIR)
 
 $(ODIR):
 	mkdir $(ODIR)
@@ -29,5 +37,5 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 
 .PHONY: clean 
 clean:
-	rm -rf $(ODIR) $(OUTPUT)
+	rm -rf $(ODIR) publisher subscriber
 
