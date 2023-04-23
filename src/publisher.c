@@ -1,6 +1,7 @@
 #include "tcp.h"
 
 #include <string.h>
+#include <sys/time.h>
 
 #define TOPIC_LEN (7)
 #define SERVER_PF_DATA (128) /* Publish format data is 128 bytes max */
@@ -49,6 +50,10 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+	struct timeval time;
+	gettimeofday(&time, NULL);
+	int64_t s1 = (int64_t)(time.tv_sec % 1000);
+
     size_t total_sent = 0;
     while (!feof(fp)) {
         memset(buffer, 0, SERVER_PF_DATA+1);
@@ -57,6 +62,8 @@ int main(int argc, char *argv[])
         size_t size = fread(buffer, 1, SERVER_PF_DATA, fp);
         printf("[%ld]\n", size);
 		if (size == 0 && feof(fp)) {
+			fclose(fp);
+			close(sock);
 			break;
 		}
 
@@ -85,11 +92,9 @@ int main(int argc, char *argv[])
 		}
     }
 
-    printf("Successfully sent %ld bytes...\n", total_sent);
+    printf("[%ld] Successfully sent %ld bytes...\n", s1, total_sent);
     fflush(stdout);
 
-    fclose(fp);
-	close(sock);
 	return 0;	
 }
 
