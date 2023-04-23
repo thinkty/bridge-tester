@@ -50,10 +50,6 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-	struct timeval time;
-	gettimeofday(&time, NULL);
-	int64_t s1 = (int64_t)(time.tv_sec);
-
     size_t total_sent = 0;
     while (!feof(fp)) {
         memset(buffer, 0, SERVER_PF_DATA+1);
@@ -91,10 +87,7 @@ int main(int argc, char *argv[])
 		}
     }
 
-	gettimeofday(&time, NULL);
-	int64_t s2 = (int64_t)(time.tv_sec);
-
-    printf("Successfully sent %ld bytes in %ld seconds...\n", s2-s1, total_sent);
+    printf("Successfully sent %ld bytes...\n", total_sent);
     fflush(stdout);
 
 	return 0;	

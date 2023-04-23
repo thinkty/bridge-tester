@@ -1,6 +1,7 @@
 #include "tcp.h"
 
 #include <string.h>
+#include <time.h>
 
 #define TOPIC_LEN (7)
 #define SERVER_PF_SIZE (2)   /* Publish format size is 2 bytes */
@@ -155,7 +156,12 @@ int handle_publish_message(int sock)
 			break;
 		}
 
-		printf("\n[%u]\n", size);
+		time_t rawtime;
+		struct tm * timeinfo;
+
+		time ( &rawtime );
+		timeinfo = localtime ( &rawtime );
+		printf("\n> %s ", asctime(timeinfo));
 		total += received;
 		if (fwrite(buffer, 1, size, fp) != received) {
 			fprintf(stderr, "Error different size of write and received\n");
