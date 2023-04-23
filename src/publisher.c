@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
 	struct timeval time;
 	gettimeofday(&time, NULL);
-	int64_t s1 = (int64_t)(time.tv_sec % 1000);
+	int64_t s1 = (int64_t)(time.tv_sec);
 
     size_t total_sent = 0;
     while (!feof(fp)) {
@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
 
         /* Read from given file */
         size_t size = fread(buffer, 1, SERVER_PF_DATA, fp);
-        printf("[%ld]\n", size);
 		if (size == 0 && feof(fp)) {
 			fclose(fp);
 			close(sock);
@@ -92,7 +91,10 @@ int main(int argc, char *argv[])
 		}
     }
 
-    printf("[%ld] Successfully sent %ld bytes...\n", s1, total_sent);
+	gettimeofday(&time, NULL);
+	int64_t s2 = (int64_t)(time.tv_sec);
+
+    printf("Successfully sent %ld bytes in %ld seconds...\n", s2-s1, total_sent);
     fflush(stdout);
 
 	return 0;	

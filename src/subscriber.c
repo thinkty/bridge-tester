@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	buffer[ret] = '\0';
-	printf("Received response : %s\n", buffer);
+	// printf("Received response : %s\n", buffer);
 
 	/* Server internal error */
 	if (buffer[0] == 'F') {
@@ -170,6 +170,6 @@ int handle_publish_message(int sock)
 		return ERR;
 	}
 
-	printf("Received %lu bytes in total...\n", total);
+	// printf("Received %lu bytes in total...\n", total);
 	return OK;
 }
